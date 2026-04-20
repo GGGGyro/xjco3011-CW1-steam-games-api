@@ -64,7 +64,8 @@ class GameAdmin(admin.ModelAdmin):
             colour = 'orange'
         else:
             colour = 'red'
-        return format_html('<span style="color: {};">{:.1f}%</span>', colour, rate)
+        rate_str = f'{rate:.1f}%'
+        return format_html('<span style="color: {};">{}</span>', colour, rate_str)
     approval_rate_display.short_description = 'Approval Rate'
 
 
