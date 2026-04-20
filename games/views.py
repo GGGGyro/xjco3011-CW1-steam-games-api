@@ -11,7 +11,7 @@ from rest_framework import viewsets, status, generics
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
-from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiTypes
+from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiParameter, OpenApiTypes
 
 from .models import Game, Review
 from .serializers import (
@@ -23,6 +23,14 @@ from .filters import GameFilter
 from .utils import paginated_response
 
 
+@extend_schema_view(
+    list=extend_schema(summary="List all games", tags=["games"]),
+    create=extend_schema(summary="Create a new game", tags=["games"]),
+    retrieve=extend_schema(summary="Retrieve a game by ID", tags=["games"]),
+    update=extend_schema(summary="Update a game (full)", tags=["games"]),
+    partial_update=extend_schema(summary="Update a game (partial)", tags=["games"]),
+    destroy=extend_schema(summary="Delete a game", tags=["games"]),
+)
 class GameViewSet(viewsets.ModelViewSet):
     """CRUD + analytics for Steam game records."""
 
@@ -186,6 +194,14 @@ class GameViewSet(viewsets.ModelViewSet):
                                            {"source_game": game.name, "count": len(data)}))
 
 
+@extend_schema_view(
+    list=extend_schema(summary="List all reviews", tags=["reviews"]),
+    create=extend_schema(summary="Create a new review", tags=["reviews"]),
+    retrieve=extend_schema(summary="Retrieve a review by ID", tags=["reviews"]),
+    update=extend_schema(summary="Update a review (full)", tags=["reviews"]),
+    partial_update=extend_schema(summary="Update a review (partial)", tags=["reviews"]),
+    destroy=extend_schema(summary="Delete a review", tags=["reviews"]),
+)
 class ReviewViewSet(viewsets.ModelViewSet):
     """CRUD endpoint for user reviews."""
 
