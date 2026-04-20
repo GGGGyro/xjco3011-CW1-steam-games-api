@@ -20,8 +20,11 @@ def make_game(**kwargs):
     return Game.objects.create(**defaults)
 
 
-def make_user(username='testuser', password='TestPass123'):
-    return User.objects.create_user(username=username, password=password, email=f'{username}@test.com')
+def make_user(username='testuser', password='TestPass123', is_staff=False):
+    return User.objects.create_user(
+        username=username, password=password,
+        email=f'{username}@test.com', is_staff=is_staff
+    )
 
 
 # ─── Model Tests ──────────────────────────────────────────────────────────────
@@ -110,7 +113,8 @@ class GameSerializerTest(TestCase):
 class GameCRUDTest(APITestCase):
     def setUp(self):
         self.client = APIClient()
-        self.user = make_user()
+        self.user = make_user()                          # 普通用户，is_staff=False
+        self.admin = make_user('adminuser', is_staff=True)  # 管理员，is_staff=True
         self.game = make_game()
         self.list_url = '/api/v1/games/'
         self.detail_url = f'/api/v1/games/{self.game.pk}/'
@@ -141,14 +145,7 @@ class GameCRUDTest(APITestCase):
         self.assertEqual(r.status_code, status.HTTP_404_NOT_FOUND)
         self.assertFalse(r.data['success'])
 
-    def test_create_authenticated(self):
-        self.client.force_authenticate(user=self.user)
-        data = {'appid': 11111, 'name': 'New Game', 'developer': 'D', 'publisher': 'P',
-                'platforms': 'windows', 'genres': 'Strategy', 'price': '29.99',
-                'positive_ratings': 200, 'negative_ratings': 20}
-        r = self.client.post(self.list_url, data, format='json')
-        self.assertEqual(r.status_code, status.HTTP_201_CREATED)
-        self.assertTrue(r.data['success'])
+    # --- 权限测试：未登录用户写操作 ---
 
     def test_create_unauthenticated_fails(self):
         data = {'appid': 22222, 'name': 'X', 'developer': 'D', 'publisher': 'P',
@@ -156,28 +153,66 @@ class GameCRUDTest(APITestCase):
         r = self.client.post(self.list_url, data, format='json')
         self.assertEqual(r.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    def test_create_duplicate_appid_fails(self):
-        self.client.force_authenticate(user=self.user)
-        data = {'appid': 99999, 'name': 'Dup', 'developer': 'D', 'publisher': 'P',
-                'platforms': 'windows', 'genres': 'Action', 'price': '0.00'}
-        r = self.client.post(self.list_url, data, format='json')
-        self.assertEqual(r.status_code, status.HTTP_400_BAD_REQUEST)
+    def test_delete_unauthenticated_fails(self):
+        r = self.client.delete(self.detail_url)
+        self.assertEqual(r.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    def test_partial_update(self):
+    # --- 权限测试：普通用户（非管理员）写操作应被拒绝 ---
+
+    def test_create_regular_user_forbidden(self):
+        """普通登录用户不能创建游戏，应返回 403。"""
         self.client.force_authenticate(user=self.user)
+        data = {'appid': 11111, 'name': 'New Game', 'developer': 'D', 'publisher': 'P',
+                'platforms': 'windows', 'genres': 'Strategy', 'price': '29.99',
+                'positive_ratings': 200, 'negative_ratings': 20}
+        r = self.client.post(self.list_url, data, format='json')
+        self.assertEqual(r.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_partial_update_regular_user_forbidden(self):
+        """普通登录用户不能修改游戏，应返回 403。"""
+        self.client.force_authenticate(user=self.user)
+        r = self.client.patch(self.detail_url, {'price': '14.99'}, format='json')
+        self.assertEqual(r.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_delete_regular_user_forbidden(self):
+        """普通登录用户不能删除游戏，应返回 403。"""
+        self.client.force_authenticate(user=self.user)
+        r = self.client.delete(self.detail_url)
+        self.assertEqual(r.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertTrue(Game.objects.filter(pk=self.game.pk).exists())
+
+    # --- 权限测试：管理员（is_staff=True）写操作应成功 ---
+
+    def test_create_admin_success(self):
+        """管理员可以创建游戏，应返回 201。"""
+        self.client.force_authenticate(user=self.admin)
+        data = {'appid': 11111, 'name': 'Admin Game', 'developer': 'D', 'publisher': 'P',
+                'platforms': 'windows', 'genres': 'Strategy', 'price': '29.99',
+                'positive_ratings': 200, 'negative_ratings': 20}
+        r = self.client.post(self.list_url, data, format='json')
+        self.assertEqual(r.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(r.data['success'])
+
+    def test_partial_update_admin_success(self):
+        """管理员可以修改游戏，应返回 200。"""
+        self.client.force_authenticate(user=self.admin)
         r = self.client.patch(self.detail_url, {'price': '14.99'}, format='json')
         self.assertEqual(r.status_code, status.HTTP_200_OK)
         self.assertEqual(r.data['data']['price'], '14.99')
 
-    def test_delete_authenticated(self):
-        self.client.force_authenticate(user=self.user)
+    def test_delete_admin_success(self):
+        """管理员可以删除游戏，应返回 200 且记录消失。"""
+        self.client.force_authenticate(user=self.admin)
         r = self.client.delete(self.detail_url)
         self.assertEqual(r.status_code, status.HTTP_200_OK)
         self.assertFalse(Game.objects.filter(pk=self.game.pk).exists())
 
-    def test_delete_unauthenticated_fails(self):
-        r = self.client.delete(self.detail_url)
-        self.assertEqual(r.status_code, status.HTTP_401_UNAUTHORIZED)
+    def test_create_duplicate_appid_fails(self):
+        self.client.force_authenticate(user=self.admin)
+        data = {'appid': 99999, 'name': 'Dup', 'developer': 'D', 'publisher': 'P',
+                'platforms': 'windows', 'genres': 'Action', 'price': '0.00'}
+        r = self.client.post(self.list_url, data, format='json')
+        self.assertEqual(r.status_code, status.HTTP_400_BAD_REQUEST)
 
 
 # ─── Analytics Tests ──────────────────────────────────────────────────────────
@@ -280,7 +315,6 @@ class ReviewCRUDTest(APITestCase):
     def test_duplicate_review_fails(self):
         """Second review for the same game by the same user should return 400."""
         self._create()
-        # Force re-authenticate to avoid stale auth state
         self.client.force_authenticate(user=self.user)
         from django.db import transaction
         try:

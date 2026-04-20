@@ -10,6 +10,7 @@ from django.contrib.auth.models import User
 from rest_framework import viewsets, status, generics
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAuthenticatedOrReadOnly
+from .permissions import IsAdminOrReadOnly
 from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiParameter, OpenApiTypes
 
@@ -35,7 +36,7 @@ class GameViewSet(viewsets.ModelViewSet):
     """CRUD + analytics for Steam game records."""
 
     queryset = Game.objects.all()
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
     filterset_class = GameFilter
     search_fields = ['name', 'developer', 'publisher', 'genres', 'steamspy_tags']
     ordering_fields = ['name', 'release_date', 'price', 'positive_ratings', 'negative_ratings', 'average_playtime']
