@@ -16,7 +16,11 @@ A RESTful API for browsing, managing, and analysing Steam game data. Built with 
 
 The full API documentation (all endpoints, parameters, response schemas, authentication, and error codes) is available in **`API_Documentation.pdf`** in the root of this repository.
 
-When running locally, interactive documentation is also available at:
+**Live (deployed):**
+- **Swagger UI**: https://xjco3011-cw1-steam-games-api-production.up.railway.app/api/docs/
+- **ReDoc**: https://xjco3011-cw1-steam-games-api-production.up.railway.app/api/redoc/
+
+**Local development:**
 - **Swagger UI**: `http://127.0.0.1:8000/api/docs/`
 - **ReDoc**: `http://127.0.0.1:8000/api/redoc/`
 
@@ -120,8 +124,16 @@ python manage.py test games --verbosity=2
 
 ## Deployment
 
-This API is deployed on PythonAnywhere and accessible at:
-`https://<username>.pythonanywhere.com/api/v1/`
+This API is deployed on **Railway** and publicly accessible. No setup required to explore the API.
+
+| Resource | URL |
+|---|---|
+| Games List | https://xjco3011-cw1-steam-games-api-production.up.railway.app/api/v1/games/ |
+| Swagger UI (Interactive Docs) | https://xjco3011-cw1-steam-games-api-production.up.railway.app/api/docs/ |
+| ReDoc (Readable Docs) | https://xjco3011-cw1-steam-games-api-production.up.railway.app/api/redoc/ |
+| Admin Panel | https://xjco3011-cw1-steam-games-api-production.up.railway.app/admin/ |
+| Register | https://xjco3011-cw1-steam-games-api-production.up.railway.app/api/v1/auth/register/ |
+| Obtain Token | https://xjco3011-cw1-steam-games-api-production.up.railway.app/api/v1/auth/token/ |
 
 ## Acknowledgements
 
