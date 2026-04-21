@@ -2,7 +2,8 @@
 Django settings for steam_api project.
 XJCO3011 Coursework 1 - Steam Games API
 """
-
+import pymysql
+pymysql.install_as_MySQLdb()
 from pathlib import Path
 from datetime import timedelta
 
@@ -139,14 +140,10 @@ SIMPLE_JWT = {
 # ─────────────────────────────────────────
 SPECTACULAR_SETTINGS = {
     'TITLE': 'Steam Games API',
-    'DESCRIPTION': (
-        'A RESTful API for browsing, managing, and analysing Steam game data. '
-        'Built with Django REST Framework and MySQL for XJCO3011 Coursework 1.'
-    ),
+    'DESCRIPTION': 'A RESTful API for browsing, managing, and analysing Steam game data. Built with Django REST Framework and MySQL.',
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
-    'CONTACT': {'name': 'XJCO3011 Student'},
-    'LICENSE': {'name': 'MIT'},
+    'CONTACT': {'name': 'XJCO3011 Student Hongrui_Zhang'},
     'TAGS': [
         {'name': 'games', 'description': 'CRUD operations on game records'},
         {'name': 'reviews', 'description': 'CRUD operations on user reviews'},
