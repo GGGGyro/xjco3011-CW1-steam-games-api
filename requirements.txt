@@ -1,6 +1,7 @@
 Django>=5.0,<5.1
 djangorestframework>=3.15,<3.16
-PyMySQL
+PyMySQL>=1.1.0
+gunicorn>=21.2.0
 djangorestframework-simplejwt>=5.3.1,<5.4.0
 drf-spectacular>=0.27.1,<0.28.0
 django-cors-headers>=4.3.1,<4.4.0

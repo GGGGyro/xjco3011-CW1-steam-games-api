@@ -2,18 +2,18 @@
 Django settings for steam_api project.
 XJCO3011 Coursework 1 - Steam Games API
 """
-import pymysql
-pymysql.install_as_MySQLdb()
+
+import os
 from pathlib import Path
 from datetime import timedelta
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-xjco3011-steam-games-api-dev-key-change-in-production'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-xjco3011-steam-games-api-dev-key-change-in-production')
 
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'True') != 'False'
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -64,16 +64,16 @@ TEMPLATES = [
 WSGI_APPLICATION = 'steam_api.wsgi.application'
 
 # ─────────────────────────────────────────
-# Database - MySQL
+# Database - MySQL (Railway env vars with local fallback)
 # ─────────────────────────────────────────
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'steam_games_db',
-        'USER': 'steamapi',
-        'PASSWORD': 'SteamAPI2026x',
-        'HOST': 'localhost',
-        'PORT': '3307',
+        'NAME': os.environ.get('MYSQLDATABASE', 'steam_games_db'),
+        'USER': os.environ.get('MYSQLUSER', 'steamapi'),
+        'PASSWORD': os.environ.get('MYSQLPASSWORD', 'SteamAPI2026x'),
+        'HOST': os.environ.get('MYSQLHOST', 'localhost'),
+        'PORT': os.environ.get('MYSQLPORT', '3307'),
         'OPTIONS': {
             'charset': 'utf8mb4',
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
@@ -94,6 +94,7 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # CORS - allow all origins in development
@@ -143,7 +144,8 @@ SPECTACULAR_SETTINGS = {
     'DESCRIPTION': 'A RESTful API for browsing, managing, and analysing Steam game data. Built with Django REST Framework and MySQL.',
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
-    'CONTACT': {'name': 'XJCO3011 Student Hongrui_Zhang'},
+    'CONTACT': {'name': 'XJCO3011 Student'},
+    'LICENSE': {'name': 'MIT'},
     'TAGS': [
         {'name': 'games', 'description': 'CRUD operations on game records'},
         {'name': 'reviews', 'description': 'CRUD operations on user reviews'},
