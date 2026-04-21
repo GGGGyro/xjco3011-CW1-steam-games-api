@@ -153,3 +153,5 @@ SPECTACULAR_SETTINGS = {
         {'name': 'auth', 'description': 'JWT authentication endpoints'},
     ],
 }
+
+CSRF_TRUSTED_ORIGINS = ['https://xjco3011-cw1-steam-games-api-production.up.railway.app']
